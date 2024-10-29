@@ -33,7 +33,10 @@ class HOT {
   });
 
   get isInjected() {
-    return this.ancestorOrigins.includes(window.location.ancestorOrigins?.[0]);
+    if (typeof window !== "undefined") {
+      return this.ancestorOrigins.includes(window?.location.ancestorOrigins?.[0]);
+    }
+    return false;
   }
 
   openInHotBrowser = false;
@@ -51,7 +54,9 @@ class HOT {
     return new Promise<HotResponse[T]>((resolve, reject) => {
       const handler = (e: any) => {
         if (e.data.id !== id) return;
-        window?.removeEventListener("message", handler);
+        if (typeof window !== 'undefined') {
+          window?.removeEventListener("message", handler);
+        }
         if (e.data.success) return resolve(e.data.payload);
         else return reject(e.data.payload);
       };
@@ -62,6 +67,8 @@ class HOT {
   }
 
   async request<T extends keyof HotResponse>(method: T, request: HotRequest[T]): Promise<HotResponse[T]> {
+    if (typeof window === "undefined") return;
+
     if (this.isInjected) {
       return this.injectedRequest(method, request);
     }
